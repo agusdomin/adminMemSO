@@ -1,32 +1,45 @@
-public class Admin implements Observer{
+package clases;
+import java.util.*;
+import clases.Proceso;
+import clases.Particion;
+import clases.Observable;
+import clases.Observer;
 
-    int tiempo=0;
-    List procesos Proceso
-    List arribos Proceso
-    boolean finTanda = false;
+public class Admin implements Observable{
 
-    int t_to_select
-    int t_to_free
-    int t_to_load
-    int mem_total
+    private int tiempo=0;
+    private ArrayList<Proceso> procesos = new ArrayList<>();
+    private ArrayList<Proceso> arribos = new ArrayList<>();
+    private boolean finTanda = false;
+
+    private int t_to_select;
+    private int t_to_free;
+    private int t_to_load;
+    private int mem_total;
     
-    Estrategia estrategia
+    private Estrategia estrategia;
 
-    ArrayList<Particion> tabla
-    ArrayList<Particion> particion
+    private ArrayList<Particion> tabla = new ArrayList<>();
+    private ArrayList<Particion> particion = new ArrayList<>();
     
-    @Override
-    addObserver(Proceso proceso){
-        procesos.add(proceso);
+    public void arribo(Proceso proceso){
+        this.arribos.add(proceso);
     }
     
     @Override
-    deleteObserver(Proceso proceso){
-        procesos.remove(proceso);
+    public void addObserver(Observer p,String tipo){
+        if(tipo.equals("particion")){
+            
+        }else if(tipo.equals("proceso")){
+            procesos.add(p);
+        }
     }
-
     @Override
-    notify(int tiempo){
+    public void deleteObserver(Observer p){
+        procesos.remove(p);
+    }
+    @Override
+    public void notify(int tiempo){
         for(Proceso proceso: procesos){
             proceso.update(tiempo);    
         }
@@ -44,10 +57,10 @@ public class Admin implements Observer{
             notify(this.tiempo);
         }while(i<t_to_select);
         // va a buscar,selecionar y crear la nueva particion segun la estrategia
-        Particion particion=(estrategia.selecionarParticion(proceso,tabla)) 
+        Particion particion=(estrategia.selecionarParticion(proceso,tabla));
         
         //Carga de la particion
-        int j=0
+        int j=0;
         do{
             this.tiempo++;
             notify(this.tiempo);
@@ -57,7 +70,7 @@ public class Admin implements Observer{
     }
 
     public void swapOut(Particion particion){
-        int i=0
+        int i=0;
         do{
             this.tiempo++;
             notify(this.tiempo);
@@ -65,9 +78,9 @@ public class Admin implements Observer{
         tabla.remove(particion);
     }
 
-    public static void main(String[] args){
+    public void administrar(){
         notify(this.tiempo);
-        while !(finTanda){
+        while (!(finTanda)){
             if (!(arribos.empty())){
                 swapIn(arribos.getFirst()); 
                 //si getFirst no elimia el primer elemnto, removerlo
@@ -77,9 +90,6 @@ public class Admin implements Observer{
             }
         }
     }
-
-    public void arribo(Proceso proceso){
-        this.arribios.add(proceso);
-    }
+   
 }
 

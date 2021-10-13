@@ -1,3 +1,4 @@
+package clases;
 public interface Observer{
     public void update(int tiempo);
 }
