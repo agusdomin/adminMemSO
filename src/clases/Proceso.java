@@ -2,25 +2,27 @@ package clases;
 
 import clases.Admin;
 
-public class Proceso implements Observer{
+public class Proceso {
     private String nombre;
     private int mem_requerida;
-    private int tiempo_trabajo;
-    private int tiempo_arribo;
+    private int t_trabajo;
+    private int t_arribo;
     
     public Proceso(){
         super();
-        tiempo_arribo=0;
-    }
-
-    public int getTtrabajo(){
-        return tiempo_trabajo;
+        t_arribo=0;
     }
     
-    @Override
-    public void update(int tiempo){
-        if(this.tiempo_arribo==tiempo){
-            Admin.arribo(this);
+    public void notificar(int tiempo,Admin admin){
+        if(tiempo==this.t_arribo){
+            admin.arribo(this);
         }
     }
+    public int getTtrabajo(){
+        return t_trabajo;
+    }
+    public int getTarribo(){
+        return t_arribo;
+    }
+    
 }
