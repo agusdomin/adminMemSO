@@ -10,7 +10,8 @@ public class Particion{
     private Proceso proceso;
     
     public Particion(){
-        this.t_ocupada=0;
+        this.t_ocupada=100;
+        this.estado=false;
     }
     
     public boolean finUsoMemoria(){
