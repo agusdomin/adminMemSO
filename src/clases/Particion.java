@@ -2,33 +2,24 @@ package clases;
 import clases.Admin;
 
 public class Particion{
-    private int id;
+    private static int id; //hacer una variable de clase y que cada instancia posea un id y aumento el id para la prox instancia
     private int mem_ocupada;
-    private int t_ocupada;
-    private boolean estado;
+    private String estado; //hacer una variable tipo Enumerado
     private int dir_comienzo;
-    private Proceso proceso;
     
-    public Particion(){
-        this.t_ocupada=100;
-        this.estado=false;
+    public Particion(int mem_requerida){
+        this.mem_ocupada=mem_requerida;
+        this.estado="Libre";
+        dir_comienzo=0;
     }
     
-    public boolean finUsoMemoria(){
-        if(this.t_ocupada==this.proceso.getTtrabajo()){
-            return true;
+
+    public void setEstado(boolean estado){
+        if(estado){
+            this.estado="Ocupada";
         }else{
-            return false;
+            this.estado="Libre";
         }
-    }
-    
-    public void notificar(int tiempo,Admin admin){
-        if(this.t_ocupada==tiempo){
-            admin.swapOut(this);
-        }
-    }
-    public int getOcupada(){
-        return this.t_ocupada;
     }
     
 }
