@@ -7,6 +7,7 @@ public class Proceso {
     private int mem_requerida;
     private int t_trabajo;
     private int t_arribo;
+    private boolean atendido;
     
     public Proceso(String n,int m,int t_t, int t_a){
         
@@ -21,11 +22,15 @@ public class Proceso {
         return this.nombre;
     }
     public boolean notificar(int tiempo){
-        if(tiempo==this.t_arribo){
-            return true;
-        }else{
-            return false;
+        if(!(atendido)){
+            if(tiempo==this.t_arribo){
+                this.atendido=true;
+                return true;
+            }else{
+                return false;
+            }
         }
+        return false;
                 
     }
     public int getTtrabajo(){

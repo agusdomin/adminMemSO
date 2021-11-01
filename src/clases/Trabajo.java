@@ -5,6 +5,7 @@ import javax.xml.transform.Templates;
 public class Trabajo {
     private int id;
     private int t_fin_ejecucion;
+    private boolean atendido;
 
     private Particion particion;
     private Proceso proceso;
@@ -18,8 +19,12 @@ public class Trabajo {
     }
 
     public boolean notificar(int t){
-        if(this.t_fin_ejecucion==t){ //usar otra variable como contador?
-            return true;
+        if(!(atendido)){
+            if(this.t_fin_ejecucion==t){ //usar otra variable como contador?
+                this.atendido=true;
+                return true;
+            }
+            return false;
         }
         return false;
     }

@@ -32,8 +32,9 @@ public class sistemaOperativo {
         } */
         Proceso proceso = new Proceso("proc1",50,3,2);
         procesos.add(proceso);
-        proceso = new Proceso("proc2",10,4,9);
-        procesos.add(proceso);
+        Proceso proceso2 = new Proceso("proc2",10,4,9);
+        procesos.add(proceso2);
+        System.out.println("Ingresan "+procesos.size()+" al administrador");
         Admin adminMemoria = new Admin(procesos);
         adminMemoria.administrar();
     }
