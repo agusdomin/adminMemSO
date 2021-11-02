@@ -12,7 +12,12 @@ public class sistemaOperativo {
         System.out.println("funciona");
         ArrayList<Proceso> procesos = new ArrayList<>();
         
-        /*File file = new File("C:/Users/Agustin/Documents/proyectos/texto.txt");
+        
+        /*
+         El formato del archivo de procesos es:
+         Nombre, memoria requerida, instante de arribo, tiempo de ejecucion
+         
+        File file = new File("C:/Users/Agustin/Documents/proyectos/texto.txt");
         Scanner sc = new Scanner(file);
         while (sc.hasNextLine()){
             System.out.println("1"+sc.nextLine());

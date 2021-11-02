@@ -3,34 +3,35 @@ package clases;
 import javax.xml.transform.Templates;
 
 public class Trabajo {
-    private int id;
+    private static int id;
+    private int myId;
     private int t_fin_ejecucion;
-    private boolean atendido;
+    private int t_ejecutado=0;
 
     private Particion particion;
     private Proceso proceso;
 
-    public Trabajo(int id,Proceso proceso, Particion particion){
-        this.id=id;
+    public Trabajo(Proceso proceso, Particion particion){
+        this.myId=getId();
+        Trabajo.id++;
         this.t_fin_ejecucion=proceso.getTtrabajo();
-
         this.proceso=proceso;
         this.particion=particion;
     }
 
-    public boolean notificar(int t){
-        if(!(atendido)){
-            if(this.t_fin_ejecucion==t){ //usar otra variable como contador?
-                this.atendido=true;
-                return true;
-            }
-            return false;
+    public boolean notificar(int t){ //esta mal, necesita un contador de los tiempos q va a ejecutandos
+        this.t_ejecutado++;
+        if(this.t_fin_ejecucion==this.t_ejecutado){ //usar otra variable como contador?
+            return true;
         }
         return false;
     }
 
-    public int getId(){
-        return this.id;
+    private int getId(){
+        return id;
+    }
+    public int getMyId(){
+        return this.myId;
     }
 
     public Particion getParticion(){

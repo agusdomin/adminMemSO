@@ -9,7 +9,7 @@ public class Proceso {
     private int t_arribo;
     private boolean atendido;
     
-    public Proceso(String n,int m,int t_t, int t_a){
+    public Proceso(String n,int m,int t_a, int t_t){
         
         this.nombre=n;
         this.mem_requerida=m;
@@ -23,7 +23,7 @@ public class Proceso {
     }
     public boolean notificar(int tiempo){
         if(!(atendido)){
-            if(tiempo==this.t_arribo){
+            if(tiempo>=this.t_arribo){
                 this.atendido=true;
                 return true;
             }else{
@@ -34,10 +34,13 @@ public class Proceso {
                 
     }
     public int getTtrabajo(){
-        return t_trabajo;
+        return this.t_trabajo;
     }
     public int getTarribo(){
-        return t_arribo;
+        return this.t_arribo;
+    }
+    public int getSize(){
+        return this.mem_requerida;
     }
     
 }

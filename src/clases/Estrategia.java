@@ -4,6 +4,6 @@ import java.util.ArrayList;
 
 public interface Estrategia{
 
-    public Particion seleccionar(Proceso proceso,ArrayList<Particion> tabla);
-    
+    public Particion selecParticion(Proceso proceso,ArrayList<Particion> tabla);
+    //public Trabajo cargarParticion(Particion particion, Proceso proceso);
 }
