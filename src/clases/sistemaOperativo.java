@@ -11,8 +11,6 @@ public class sistemaOperativo {
     public static void main(String[] args)throws FileNotFoundException {
         
         ArrayList<Proceso> procesos = new ArrayList<>();
-        
-        
         /*
          El formato del archivo de procesos es:
          Nombre, memoria requerida, instante de arribo, tiempo de ejecucion
@@ -35,14 +33,16 @@ public class sistemaOperativo {
             Proceso proceso = new Proceso(nombre,mem_req,t_trabajo,t_arribo);
             procesos.add(proceso);
         } */
-        Proceso proceso = new Proceso("proc1",50,3,100);
+
+        Proceso proceso = new Proceso("proc1",50,3,16);
         procesos.add(proceso);
-        Proceso proceso2 = new Proceso("proc2",10,4,90);
+        Proceso proceso2 = new Proceso("proc2",10,4,5);
         procesos.add(proceso2);
-        Proceso proceso3 = new Proceso("proc3",30,12,90);
+        Proceso proceso3 = new Proceso("proc3",30,2,10);
         procesos.add(proceso3);
-        Proceso proceso4 = new Proceso("proc4",20,10,90);
+        Proceso proceso4 = new Proceso("proc4",20,7,20);
         procesos.add(proceso4);
+        
         Admin adminMemoria = new Admin(procesos);
         adminMemoria.administrar();
     }

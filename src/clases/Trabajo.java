@@ -12,8 +12,8 @@ public class Trabajo {
     private Proceso proceso;
 
     public Trabajo(Proceso proceso, Particion particion){
-        this.myId=getId();
-        Trabajo.id++;
+        this.myId=id;
+        id++;
         this.t_fin_ejecucion=proceso.getTtrabajo();
         this.proceso=proceso;
         this.particion=particion;
@@ -27,15 +27,15 @@ public class Trabajo {
         return false;
     }
 
-    private int getId(){
-        return id;
-    }
     public int getMyId(){
         return this.myId;
     }
 
     public Particion getParticion(){
         return this.particion;
+    }
+    public Proceso getProceso(){
+        return this.proceso;
     }
 }
 

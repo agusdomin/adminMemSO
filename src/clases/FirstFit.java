@@ -27,6 +27,7 @@ public class FirstFit implements Estrategia{
         }
         if(!(seleccionado)){
             particon_selec=null;
+            System.out.println("No hay particiones libres");
         }
         
         return particon_selec;

@@ -16,7 +16,6 @@ public class Admin{
     private int t_to_free;
     private int t_to_load;
     private int mem_total;
-    private int proc_atendidos=0;
     
     private Estrategia estrategia;
 
@@ -24,7 +23,6 @@ public class Admin{
     private ArrayList<Proceso> procesos = new ArrayList<>();
 
     private ArrayList<Particion> tabla = new ArrayList<>();
-    private ArrayList<Particion> buffer_tabla = new ArrayList<>(); //creada para usar de buffer al elimianr particiones
 
     private ArrayList<Trabajo> trabajos = new ArrayList<>();
     private Queue<Trabajo> salidas = new LinkedList<>();
@@ -83,39 +81,23 @@ public class Admin{
 
     public void liberarParticion(Trabajo trabajo){
         Particion particion= trabajo.getParticion();
-        particion.setEstado(false);
+        this.tabla.get(this.tabla.indexOf(particion)).setEstado(false);
+        System.out.println("Se libero la particion "+particion.getMyId()+" del proceso"+trabajo.getProceso().getNombre());
     }
 
     public void swapOut(Trabajo trabajo){
         System.out.println("Se libera un trabajo");
-        int i=0;
-        do{
-            this.tiempo++;
-            this.pasoTiempo();
-        }while(i<t_to_free);
-        //cambiar particion en donde se almacenaba el trabajo
-        this.liberarParticion(trabajo);
-        trabajos.remove(trabajo);
-        trabajos.trimToSize();
-    }
-
-    public void swapIn(Proceso proceso){
         
-        //Seleccion de una particion
-        for(int i=0;i<t_to_select;i++){
+        for(int i=0;i<t_to_free;i++){
             this.tiempo++;
             this.pasoTiempo();
         }
-        
-        /* va a buscar y selecionar una particion disponible
-        Si existe una, crea la nueva particion y se carga antes de la partcion seleccionada
+        //cambiar particion en donde se almacenaba el trabajo
+        this.liberarParticion(trabajo);
+        trabajos.remove(trabajo);
+    }
 
-        En las salidas de texto de los eventos debe reflejarse la 
-        creacion de particiones, el particionamiento que se hace*/
-
-        Particion particion=(estrategia.selecParticion(proceso,this.tabla));
-        if(particion!=null){
-            
+    public void swapIn(Proceso proceso, Particion particion){    
             System.out.println("Se selecciono la particion "+particion.getMyId()+" para "+proceso.getNombre());
 
             // Se crea la nueva partcion
@@ -134,44 +116,61 @@ public class Admin{
             trabajos.add(trabajo);
 
             System.out.println("Se creo el trabajo para "+proceso.getNombre()+" y se cargó en la particion "+particion.getMyId());
-        }
     }
 
     
     public void administrar() {
         System.out.println("Comienzo de la tanda");
         int atendidos=0;
+        int terminados=0;
         
         while (!(finTanda)){
             this.pasoTiempo();
-
+            
             // Primero me fijo si no existe un trabajo que haya finalizado su ejeccucion
             if (salidas.peek()!=null){
                 Trabajo trabajo = salidas.remove();
                 System.out.println("Termina trabajo "+trabajo.getMyId());
+                terminados++;
                 this.swapOut(trabajo); 
             }
 
             // Luego me fijo si hay algun proceso que haya arribado
             if ((arribos.peek()!=null)){
-                Proceso proc=arribos.remove();
-                System.out.println("Arriba proceso "+proc.getNombre());
-                atendidos++;
-                this.swapIn(proc);
+                System.out.println("Arriba proceso "+arribos.peek().getNombre());
+                
+                // Se verifica que exista una particion para seleccionar
+                for(int i=0;i<t_to_select;i++){
+                    this.tiempo++;
+                    this.pasoTiempo();
+                }
+                /* va a buscar y selecionar una particion disponible
+                Si existe una, crea la nueva particion y se carga antes de la partcion seleccionada
+                En las salidas de texto de los eventos debe reflejarse la 
+                creacion de particiones, el particionamiento que se hace*/
+                Particion particion=(estrategia.selecParticion(arribos.peek(),this.tabla));
+                //Si existe una particion libre se atiende al proceso
+                if(particion!=null){
+                    Proceso proc=arribos.remove();
+                    atendidos++;
+                    this.swapIn(proc,particion);
+                //Si no existe ninguna particion libre, el proceso espera hasta que algun trabajo finalize
+                }
             }
-            
-            // Si se atendieron todos los procesos de la tanda, se finaliza
-            if(procesos.size()==atendidos){
+            // Si se atendieron todos los procesos que entraron y todos los trabajos terminaron, se finaliza la tanda
+            if((procesos.size()==atendidos)&&(atendidos==terminados)){
                 finTanda=true;
+                System.out.println("Se atendieron a "+atendidos+" procesos y "+terminados+" trabajos finalizaron");
                 break;
             }
             this.tiempo++;
-
-          /* 
-            -ANALIZAR COMO FINALIZAR LA TANDA
-            -COMO LEER UN ARCHIVO CON VARIAS LINES SEPARADAS POR COMA
-            -
-           */
+        
+            /* FALTA!!!!
+                -COMO LEER UN ARCHIVO CON VARIAS LINES SEPARADAS POR COMA
+                -Implementar las direcciones de las particiones
+                -Cuando una particion se libera, verificar si la anterior o posterior estan libres para compactarlas en una sola particion
+                -Implementar las otras politicas
+            */
         }
     }
    
