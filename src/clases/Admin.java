@@ -42,13 +42,9 @@ public class Admin{
         this.mem_total=100;
         this.procesos=procesos;
         System.out.println("Ingresan "+procesos.size()+" al administrador");
-        tabla.add(new Particion(this.mem_total)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
+        tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
     }
-    
-    public void addProceso(String nombre,int mem, int t_trabajo, int t_arribo){
-        Proceso proceso = new Proceso(nombre,mem,t_trabajo,t_arribo);
-        this.procesos.add(proceso);
-    }
+
     
     //notifica paso del tiempo
     public void pasoTiempo(){
@@ -71,62 +67,18 @@ public class Admin{
     //Obtengo la particion selecionada para cargar el proceso, y la divido en dos
     //La nueva particion se carga posterior a la original
     //Para esto utilizo un buffer, para agregar la nueva particion y luego tabla=buffer
-    public void crearParticion(Particion particion,Proceso proceso){
-        Particion nueva_particion = new Particion(proceso.getSize(),"Ocupada");
-        particion.setSize(particion.getSize()-proceso.getSize());
-        for(int i=0;i<=this.tabla.size();i++){
-            buffer_tabla.add(tabla.get(i));
-            if(this.tabla.get(i)==particion){
-                buffer_tabla.add(nueva_particion);
-            }
-        }
-        this.tabla=buffer_tabla;
+    public Particion crearParticion(Particion particion,Proceso proceso){
+        Particion nueva_particion = new Particion((particion.getSize()-proceso.getSize()),false);
+        this.tabla.get(this.tabla.indexOf(particion)).setSize(proceso.getSize());
+        this.tabla.get(this.tabla.indexOf(particion)).setEstado(true);
+        return nueva_particion;
     }
-
-
-    public ArrayList<Particion> swapIn(Proceso proceso){
-        
-        //Seleccion de una particion
-        
-        for(int i=0;i<t_to_select;i++){
-            this.tiempo++;
-            this.pasoTiempo();
-        }
-        /* va a buscar,selecionar y crear la nueva particion segun la estrategia
-        En las salidas de texto de los eventos debe reflejarse la 
-        creacion de particiones, el particionamiento que se hace*/
-
-        Particion particion=(estrategia.selecParticion(proceso,this.tabla));
-        System.out.println("Se selecciono la particion "+particion.getMyId()+" para "+proceso.getNombre());
-        //crearParticion(particion,proceso);
-        Particion nueva_particion = new Particion(proceso.getSize(),"Ocupada");
-        particion.setSize(particion.getSize()-proceso.getSize());
-
-        //Carga de la particion
-        for(int i=0;i<t_to_select;i++){
-            this.tiempo++;
-            this.pasoTiempo();
-        }
-        /*
-        System.out.println("Tamanio de la tabla "+this.tabla.size());
-        va a cargar en la tabla la particion       
-        */
-        for (Particion p : this.tabla) {
-            if(p.getMyId()==particion.getMyId()){                
-                this.buffer_tabla.add(nueva_particion);                
-                this.buffer_tabla.add(p);
-            }else{
-                this.buffer_tabla.add(p);
-            }
-        
-        }
-        
-        //System.out.println("Tamanio de la tabla "+this.tabla.size());
-        //Se crea el trabajo, del proceso cargado en la particion
-        Trabajo trabajo = new Trabajo(proceso,particion);
-        trabajos.add(trabajo);
-        System.out.println("Se creo el trabajo para "+proceso.getNombre()+" y se cargó en la particion "+particion.getMyId());
-        return buffer_tabla;
+    
+    public void cargarParticion(Particion nueva_particion, Particion particion){
+        int i=0;
+        i=this.tabla.indexOf(particion);
+        this.tabla.add(i,nueva_particion);
+        System.out.println("Cargar particion");
     }
 
     public void liberarParticion(Trabajo trabajo){
@@ -146,26 +98,73 @@ public class Admin{
         trabajos.remove(trabajo);
         trabajos.trimToSize();
     }
+
+    public void swapIn(Proceso proceso){
+        
+        //Seleccion de una particion
+        for(int i=0;i<t_to_select;i++){
+            this.tiempo++;
+            this.pasoTiempo();
+        }
+        
+        /* va a buscar y selecionar una particion disponible
+        Si existe una, crea la nueva particion y se carga antes de la partcion seleccionada
+
+        En las salidas de texto de los eventos debe reflejarse la 
+        creacion de particiones, el particionamiento que se hace*/
+
+        Particion particion=(estrategia.selecParticion(proceso,this.tabla));
+        if(particion!=null){
+            
+            System.out.println("Se selecciono la particion "+particion.getMyId()+" para "+proceso.getNombre());
+
+            // Se crea la nueva partcion
+            Particion nueva_particion=crearParticion(particion,proceso);
+            
+            // Tiempo de carga de la particion
+            for(int i=0;i<t_to_load;i++){
+                this.tiempo++;
+                this.pasoTiempo();
+            }
+            // va a cargar en la tabla la particion
+            cargarParticion(nueva_particion,particion);
+            
+            //Se crea el trabajo, del proceso arribado cargado en la particion seleccionada
+            Trabajo trabajo = new Trabajo(proceso,particion);
+            trabajos.add(trabajo);
+
+            System.out.println("Se creo el trabajo para "+proceso.getNombre()+" y se cargó en la particion "+particion.getMyId());
+        }
+    }
+
     
     public void administrar() {
         System.out.println("Comienzo de la tanda");
+        int atendidos=0;
         
         while (!(finTanda)){
             this.pasoTiempo();
 
+            // Primero me fijo si no existe un trabajo que haya finalizado su ejeccucion
             if (salidas.peek()!=null){
                 Trabajo trabajo = salidas.remove();
                 System.out.println("Termina trabajo "+trabajo.getMyId());
                 this.swapOut(trabajo); 
-                
-                //arribos.trimToSize();
             }
+
+            // Luego me fijo si hay algun proceso que haya arribado
             if ((arribos.peek()!=null)){
                 Proceso proc=arribos.remove();
                 System.out.println("Arriba proceso "+proc.getNombre());
-                this.tabla=this.swapIn(proc);
+                atendidos++;
+                this.swapIn(proc);
             }
             
+            // Si se atendieron todos los procesos de la tanda, se finaliza
+            if(procesos.size()==atendidos){
+                finTanda=true;
+                break;
+            }
             this.tiempo++;
 
           /* 
@@ -177,5 +176,3 @@ public class Admin{
     }
    
 }
-
-

@@ -9,7 +9,7 @@ import clases.Proceso;
 public class sistemaOperativo {
     
     public static void main(String[] args)throws FileNotFoundException {
-        System.out.println("funciona");
+        
         ArrayList<Proceso> procesos = new ArrayList<>();
         
         
@@ -35,11 +35,14 @@ public class sistemaOperativo {
             Proceso proceso = new Proceso(nombre,mem_req,t_trabajo,t_arribo);
             procesos.add(proceso);
         } */
-        Proceso proceso = new Proceso("proc1",50,3,2);
+        Proceso proceso = new Proceso("proc1",50,3,100);
         procesos.add(proceso);
-        Proceso proceso2 = new Proceso("proc2",10,4,9);
+        Proceso proceso2 = new Proceso("proc2",10,4,90);
         procesos.add(proceso2);
-        System.out.println("Ingresan "+procesos.size()+" al administrador");
+        Proceso proceso3 = new Proceso("proc3",30,12,90);
+        procesos.add(proceso3);
+        Proceso proceso4 = new Proceso("proc4",20,10,90);
+        procesos.add(proceso4);
         Admin adminMemoria = new Admin(procesos);
         adminMemoria.administrar();
     }
