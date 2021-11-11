@@ -34,14 +34,23 @@ public class sistemaOperativo {
             procesos.add(proceso);
         } */
 
-        Proceso proceso = new Proceso("proc1",50,3,16);
+        Proceso proceso = new Proceso("proc1",30,0,6);
         procesos.add(proceso);
-        Proceso proceso2 = new Proceso("proc2",10,4,5);
+        Proceso proceso2 = new Proceso("proc2",20,1,15);
         procesos.add(proceso2);
-        Proceso proceso3 = new Proceso("proc3",30,2,10);
+        Proceso proceso3 = new Proceso("proc3",20,2,4);
         procesos.add(proceso3);
-        Proceso proceso4 = new Proceso("proc4",20,7,20);
+        Proceso proceso4 = new Proceso("proc4",20,3,10);
         procesos.add(proceso4);
+        Proceso proceso5 = new Proceso("proc5",30,4,2);
+        procesos.add(proceso5);
+        Proceso proceso6 = new Proceso("proc6",20,5,8);
+        procesos.add(proceso6);
+        Proceso proceso7 = new Proceso("proc7",30,6,10);
+        procesos.add(proceso7);
+        Proceso proceso8 = new Proceso("proc8",10,7,3);
+        procesos.add(proceso8);
+        
         
         Admin adminMemoria = new Admin(procesos);
         adminMemoria.administrar();
