@@ -26,11 +26,6 @@ public class Admin{
 
     private ArrayList<Trabajo> trabajos = new ArrayList<>();
     private Queue<Trabajo> salidas = new LinkedList<>();
-
-    
-    /* el nuevo plan seria que el admin recorra todas las listas de procesos y 
-    particiones consultando sus tiempos de arribo y finalizacion */
-    
     
     public Admin(ArrayList<Proceso> procesos){
         this.estrategia = new WorstFit();
@@ -83,7 +78,6 @@ public class Admin{
         this.tabla.get(this.tabla.indexOf(particion)).setSize(proceso.getSize());
         this.tabla.get(this.tabla.indexOf(particion)).setEstado(true);
         
-        
         return nueva_particion;
     }
     
@@ -97,7 +91,7 @@ public class Admin{
     public void liberarParticion(Trabajo trabajo){
         Particion particion= trabajo.getParticion();
         this.tabla.get(this.tabla.indexOf(particion)).setEstado(false);
-        System.out.println("Se libero la particion "+particion.getMyId()+" del proceso"+trabajo.getProceso().getNombre());
+        System.out.println("Se libero la particion "+particion.getMyId()+" del proceso "+trabajo.getProceso().getNombre());
     }
 
     public void swapOut(Trabajo trabajo){
@@ -110,11 +104,9 @@ public class Admin{
             this.pasoTiempo();
         }
         //cambiar particion en donde se almacenaba el trabajo
-        
     }
 
     public void swapIn(Proceso proceso, Particion particion){    
-
             // Se crea la nueva partcion
             Particion nueva_particion=crearParticion(particion,proceso);
             if(nueva_particion!=null){
@@ -130,10 +122,6 @@ public class Admin{
                 this.tiempo++;
                 this.pasoTiempo();
             }
-
-            
-            
-           
     }
 
     
@@ -162,7 +150,7 @@ public class Admin{
                 En las salidas de texto de los eventos debe reflejarse la 
                 creacion de particiones, el particionamiento que se hace*/
                 Particion particion=(estrategia.selecParticion(arribos.peek(),this.tabla));
-                System.out.println("Se selecciono la particion "+particion.getMyId()+" para "+arribos.peek().getNombre());
+                
                 // Se verifica que exista una particion para seleccionar
                 for(int i=0;i<t_to_select;i++){
                     this.tiempo++;
@@ -172,6 +160,7 @@ public class Admin{
                 
                 //Si existe una particion libre se atiende al proceso
                 if(particion!=null){
+                    System.out.println("Se selecciono la particion "+particion.getMyId()+" para "+arribos.peek().getNombre());
                     Proceso proc=arribos.remove();
                     atendidos++;
                     this.swapIn(proc,particion);
@@ -187,10 +176,12 @@ public class Admin{
             this.tiempo++;
         
             /* FALTA!!!!
-                -COMO LEER UN ARCHIVO CON VARIAS LINES SEPARADAS POR COMA
+                *COMO LEER UN ARCHIVO CON VARIAS LINES SEPARADAS POR COMA
                 -Implementar las direcciones de las particiones
                 -Cuando una particion se libera, verificar si la anterior o posterior estan libres para compactarlas en una sola particion
-                -Implementar las otras politicas
+                *Implementar las otras politicas
+                -escribir un archivo
+                -Swing
             */
         }
     }
