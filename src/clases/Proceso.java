@@ -1,7 +1,5 @@
 package clases;
 
-import clases.Admin;
-
 public class Proceso {
     private String nombre;
     private int mem_requerida;

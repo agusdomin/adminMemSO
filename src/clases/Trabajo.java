@@ -1,7 +1,5 @@
 package clases;
 
-import javax.xml.transform.Templates;
-
 public class Trabajo {
     private static int id;
     private int myId;

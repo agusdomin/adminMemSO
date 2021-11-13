@@ -1,5 +1,4 @@
 package clases;
-import clases.Admin;
 
 public class Particion{
     public static int id=0;
