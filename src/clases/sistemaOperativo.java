@@ -10,7 +10,7 @@ public class sistemaOperativo {
     
     public static void main(String[] args)throws FileNotFoundException {
         ArrayList<Proceso> procesos = new ArrayList<>();
-        File file = new File("C:/Users/Agus/Documents/Proyectos/Java/entrada.txt");
+        File file = new File("C:/Users/Agus/Documents/Proyectos/Java/adminMemSO/entrada.txt");
         Scanner sc = new Scanner(file);
         
         /*
