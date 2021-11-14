@@ -39,5 +39,15 @@ public class sistemaOperativo {
         
         Admin adminMemoria = new Admin(procesos);
         adminMemoria.administrar();
+        
+        /* FALTA!!!!
+            *COMO LEER UN ARCHIVO CON VARIAS LINES SEPARADAS POR COMA
+            -Implementar las direcciones de las particiones
+            *Cuando una particion se libera, verificar si la anterior o posterior estan libres para compactarlas en una sola particion
+            *Implementar las otras politicas
+            -escribir un archivo
+            -Swing
+        */
+        
     }
 }

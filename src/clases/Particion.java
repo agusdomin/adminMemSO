@@ -20,6 +20,10 @@ public class Particion{
     public void setSize(int size){
         this.mem_ocupada=size;
     }
+
+    public void compactar(int size){
+        this.mem_ocupada+=size;
+    }
     public boolean getEstado(){
         return this.ocupada;
     }

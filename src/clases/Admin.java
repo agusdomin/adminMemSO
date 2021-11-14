@@ -27,43 +27,44 @@ public class Admin{
     private ArrayList<Trabajo> trabajos = new ArrayList<>();
     private Queue<Trabajo> salidas = new LinkedList<>();
     
+
     public Admin(ArrayList<Proceso> procesos){
         this.estrategia = new WorstFit();
         this.t_to_select=1;
         this.t_to_load=1;
         this.t_to_free=1;
-        this.mem_total=130;
+        this.mem_total=260;
         this.procesos=procesos;
         System.out.println("Ingresan "+procesos.size()+" al administrador");
         tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
     }
 
     
-    //notifica paso del tiempo
+    //Notifica paso del tiempo
     public void pasoTiempo(){
         System.out.println("");
         System.out.println("######################");
         System.out.println("");
         System.out.println("Instante de tiempo: "+this.tiempo);
-        //System.out.println("Se notifica a los procesos y trabajos del paso del tiempo");
         for(Proceso proceso: procesos){
             if(proceso.notificar(this.tiempo)){
                 this.arribos.add(proceso);
             }
         }
         
-        //System.out.println("Se notifica a las particiones el paso del tiempo");
         for(Trabajo trabajo: trabajos){
             if(trabajo.notificar(this.tiempo)){
                 this.salidas.add(trabajo);
             }
         }
+
         System.out.println("----ESTADO DE LA TABLA----");
         for(Particion particion: tabla){
             System.out.println("Particion: "+particion.getMyId()+"; estado: "+particion.getEstado()+"; tamaño: "+particion.getSize());
         }
         System.out.println("----EVENTOS----");
     }
+
 
     //Obtengo la particion selecionada para cargar el proceso, y la divido en dos
     //La nueva particion se carga posterior a la original
@@ -81,6 +82,8 @@ public class Admin{
         return nueva_particion;
     }
     
+
+    //Se encarga de cargar la nueva particion libre creada y la ocupada
     public void cargarParticion(Particion nueva_particion, Particion particion){
         int i=0;
         i=this.tabla.indexOf(particion);
@@ -88,16 +91,58 @@ public class Admin{
         System.out.println("Cargar particion");
     }
 
+
+    //Se encarga de liberar una particion y de compactar particiones libres proximas
     public void liberarParticion(Trabajo trabajo){
+        
         Particion particion= trabajo.getParticion();
         this.tabla.get(this.tabla.indexOf(particion)).setEstado(false);
-        System.out.println("Se libero la particion "+particion.getMyId()+" del proceso "+trabajo.getProceso().getNombre());
+        System.out.println("Se libero la particion: "+particion.getMyId()+"; del trabajo: "+trabajo.getMyId()+"; perteneciente al proceso: "+trabajo.getProceso().getNombre());
+
+        //Se analiza si hay que unificar particiones libres proximas a la liberada
+        
+        //Si la particion anterior a la del trabajo que esta finalizando esta libre, las unifico        
+        try {
+            ArrayList<Particion> buffer = new ArrayList<>();
+            int particion_prev = this.tabla.indexOf(particion)-1;    
+            
+            if (! this.tabla.get(particion_prev).getEstado() ){
+                this.tabla.get(this.tabla.indexOf(particion)).compactar(  this.tabla.get(particion_prev).getSize());;
+                this.tabla.remove(particion_prev);
+                for(Particion p: tabla){
+                    if(p!=null){buffer.add(p);}
+                }
+                this.tabla=buffer;
+            }   
+        } catch (IndexOutOfBoundsException e) {}
+
+
+        //Si la particion posterior a la del trabajo que esta finalizando esta libre, las unifico        
+        try {
+            ArrayList<Particion> buffer = new ArrayList<>();
+            int particion_pos = this.tabla.indexOf(particion)+1;    
+            
+            if (! this.tabla.get(particion_pos).getEstado() ){
+                this.tabla.get(this.tabla.indexOf(particion)).compactar(  this.tabla.get(particion_pos).getSize());;
+                this.tabla.remove(particion_pos);
+                for(Particion p: tabla){
+                    if(p!=null){buffer.add(p);}
+                }
+                this.tabla=buffer;
+            }   
+        
+        } catch (IndexOutOfBoundsException e) {}
+
     }
 
+
+    //Se encarga de finalizar un trabajo y de liberar particiones
     public void swapOut(Trabajo trabajo){
-        System.out.println("Se libera un trabajo");
+
         this.liberarParticion(trabajo);
+        System.out.println("Se termina el trabajo: "+trabajo.getMyId());
         trabajos.remove(trabajo);
+        
 
         for(int i=0;i<t_to_free;i++){
             this.tiempo++;
@@ -106,6 +151,8 @@ public class Admin{
         //cambiar particion en donde se almacenaba el trabajo
     }
 
+
+    //Se encarga de seleccionar partciones, crearlas y crear trabajos a partir del proceso que arribo
     public void swapIn(Proceso proceso, Particion particion){    
             // Se crea la nueva partcion
             Particion nueva_particion=crearParticion(particion,proceso);
@@ -124,7 +171,7 @@ public class Admin{
             }
     }
 
-    
+    // Funcion principal, se encarga de dar paso al tiempo, verificar si algun proceso arribo o si algun trabajo finalizo su ejecucion
     public void administrar() {
         System.out.println("Comienzo de la tanda");
         int atendidos=0;
@@ -136,7 +183,7 @@ public class Admin{
             // Primero me fijo si no existe un trabajo que haya finalizado su ejeccucion
             if (salidas.peek()!=null){
                 Trabajo trabajo = salidas.remove();
-                System.out.println("Termina trabajo "+trabajo.getMyId());
+                System.out.println("El trabajo "+trabajo.getMyId()+" termina su ejecucion");
                 terminados++;
                 this.swapOut(trabajo); 
             }
@@ -174,16 +221,7 @@ public class Admin{
                 break;
             }
             this.tiempo++;
-        
-            /* FALTA!!!!
-                *COMO LEER UN ARCHIVO CON VARIAS LINES SEPARADAS POR COMA
-                -Implementar las direcciones de las particiones
-                -Cuando una particion se libera, verificar si la anterior o posterior estan libres para compactarlas en una sola particion
-                *Implementar las otras politicas
-                -escribir un archivo
-                -Swing
-            */
         }
+        this.pasoTiempo();
     }
-   
 }
