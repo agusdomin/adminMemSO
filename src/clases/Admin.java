@@ -28,18 +28,32 @@ public class Admin{
     private Queue<Trabajo> salidas = new LinkedList<>();
     
 
-    public Admin(ArrayList<Proceso> procesos){
+    public Admin(){
         this.estrategia = new WorstFit();
         this.t_to_select=1;
         this.t_to_load=1;
         this.t_to_free=1;
         this.mem_total=260;
-        this.procesos=procesos;
+        Particion.id=0;
+        System.out.println("Ingresan "+procesos.size()+" al administrador");
+        tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
+    }
+    
+    public Admin(Estrategia estrategia, int mem_total, int t_to_select,int t_to_load, int t_to_free){
+        this.estrategia = estrategia;
+        this.t_to_select=t_to_select;
+        this.t_to_load=t_to_load;
+        this.t_to_free=t_to_free;
+        this.mem_total=mem_total;
+        Particion.id=0;
         System.out.println("Ingresan "+procesos.size()+" al administrador");
         tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
     }
 
-    
+    public void crearProceso(String nombre,int mem_req, int t_arribo, int t_trabajo){
+        Proceso proceso = new Proceso(nombre,mem_req,t_arribo,t_trabajo);
+        this.procesos.add(proceso);
+    }
     //Notifica paso del tiempo
     public void pasoTiempo(){
         System.out.println("");
@@ -130,9 +144,7 @@ public class Admin{
                 }
                 this.tabla=buffer;
             }   
-        
         } catch (IndexOutOfBoundsException e) {}
-
     }
 
 
@@ -142,7 +154,6 @@ public class Admin{
         this.liberarParticion(trabajo);
         System.out.println("Se termina el trabajo: "+trabajo.getMyId());
         trabajos.remove(trabajo);
-        
 
         for(int i=0;i<t_to_free;i++){
             this.tiempo++;
