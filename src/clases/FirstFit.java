@@ -5,10 +5,11 @@ import java.util.ArrayList;
 public class FirstFit implements Estrategia{
 
     Particion particon_selec;
-
+    private String nombre;
     public FirstFit(){
         super();
-        Particion particon_selec=null;
+        particon_selec=null;
+        this.nombre="First-fit";
     }
     
     @Override
@@ -32,4 +33,9 @@ public class FirstFit implements Estrategia{
         
         return particon_selec;
     }    
+    
+    
+    public String getNombre(){
+        return this.nombre;
+    }
 }

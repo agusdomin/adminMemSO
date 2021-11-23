@@ -13,7 +13,7 @@ public class Particion{
         this.mem_ocupada=mem_requerida;
         this.ocupada=ocupada;
         dir_comienzo=1;
-        System.out.println("Se creo particion con id "+this.myId+" con tamanio "+this.mem_ocupada);
+        
     }    
     
     public void setSize(int size){  this.mem_ocupada=size; }

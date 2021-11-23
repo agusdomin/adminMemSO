@@ -5,7 +5,11 @@ import clases.Trabajo;
 import clases.Particion;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import swing.Pantalla;
 
 public class Admin{
 
@@ -17,6 +21,8 @@ public class Admin{
     private int t_to_load;
     private int mem_total;
     
+    private int cant_procesos;
+    
     private Estrategia estrategia;
 
     private Queue<Proceso> arribos = new LinkedList<>();
@@ -27,39 +33,99 @@ public class Admin{
     private ArrayList<Trabajo> trabajos = new ArrayList<>();
     private Queue<Trabajo> salidas = new LinkedList<>();
     
-
-    public Admin(){
-        this.estrategia = new WorstFit();
-        this.t_to_select=1;
-        this.t_to_load=1;
-        this.t_to_free=1;
-        this.mem_total=260;
-        Particion.id=0;
-        System.out.println("Ingresan "+procesos.size()+" al administrador");
-        tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
-    }
+    private Pantalla pantalla;
+    private File OutputLogFile;
+    private File OutputTabFile;
+    private File OutputResultFile;
+    private PrintWriter  escritorLog;
+    private PrintWriter  escritorTab;
+    private PrintWriter  escritorResult;
     
-    public Admin(Estrategia estrategia, int mem_total, int t_to_select,int t_to_load, int t_to_free){
-        this.estrategia = estrategia;
+    public Admin(String estrategiaSeleccionada, int mem_total, int t_to_select,int t_to_load, int t_to_free, Pantalla pantalla){
+        switch(estrategiaSeleccionada){
+            case "FF": 
+                this.estrategia = new FirstFit();
+                break;
+            case "NF":
+                this.estrategia = new NextFit();
+                break;
+            case "BF":
+                this.estrategia = new BestFit();
+                break;
+            case "WF":
+                this.estrategia = new WorstFit();
+                break;
+            default:
+                this.estrategia = new FirstFit();
+        }
         this.t_to_select=t_to_select;
         this.t_to_load=t_to_load;
         this.t_to_free=t_to_free;
         this.mem_total=mem_total;
+        this.pantalla=pantalla;
+        
         Particion.id=0;
-        System.out.println("Ingresan "+procesos.size()+" al administrador");
-        tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
-    }
 
-    public void crearProceso(String nombre,int mem_req, int t_arribo, int t_trabajo){
-        Proceso proceso = new Proceso(nombre,mem_req,t_arribo,t_trabajo);
-        this.procesos.add(proceso);
+        tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
+        
+        this.crearArchivos();
     }
+    
+    //Manejo de archivos
+    private void crearArchivos(){
+        try {
+            OutputLogFile= new File("Log.txt");
+            OutputTabFile= new File("Tabla.txt");
+            OutputResultFile= new File("Resultados.txt");
+            
+            if (OutputLogFile.createNewFile()) {
+              System.out.println("Archivo creado " + OutputLogFile.getName());
+            } else {
+              System.out.println("El archivo ya existe");
+            }
+            if (OutputTabFile.createNewFile()) {
+              System.out.println("Archivo creado  " + OutputTabFile.getName());
+            } else {
+              System.out.println("El archivo ya existe");
+            }
+            if (OutputResultFile.createNewFile()) {
+              System.out.println("Archivo creado  " + OutputResultFile.getName());
+            } else {
+              System.out.println("El archivo ya existe");
+            }
+            
+            this.escritorLog = new PrintWriter(this.OutputLogFile);
+            this.escritorTab = new PrintWriter(this.OutputTabFile);
+            this.escritorResult = new PrintWriter(this.OutputResultFile);
+            
+        } catch (IOException e) {
+            System.out.println("No se pudieron crear los archivos");
+            e.printStackTrace();
+        }
+    }
+    private void escribirEvento(String s){
+        pantalla.escribirEvento(s);
+        this.escritorLog.println(s);
+    }
+    private void estadoTabla(String s){
+        pantalla.estadoTabla(s);
+        escritorTab.println(s);
+    }
+    private void escribirResultados(String s){    
+        pantalla.escribirResultados(s);
+        escritorResult.println(s);
+    }
+    
+    
+    
     //Notifica paso del tiempo
     public void pasoTiempo(){
-        System.out.println("");
-        System.out.println("######################");
-        System.out.println("");
-        System.out.println("Instante de tiempo: "+this.tiempo);
+  
+        estadoTabla("\n###################\n");
+        estadoTabla("Instante de tiempo: "+this.tiempo);
+        escribirEvento("\n###################\n");
+        escribirEvento("Instante de tiempo: "+this.tiempo);
+        
         for(Proceso proceso: procesos){
             if(proceso.notificar(this.tiempo)){
                 this.arribos.add(proceso);
@@ -72,14 +138,20 @@ public class Admin{
             }
         }
 
-        System.out.println("----ESTADO DE LA TABLA----");
+        estadoTabla("----ESTADO DE LA TABLA----");
         for(Particion particion: tabla){
-            System.out.println("Particion: "+particion.getMyId()+"; estado: "+particion.getEstado()+"; tamaño: "+particion.getSize());
+            estadoTabla("Particion: "+particion.getMyId()+"; estado: "+particion.getEstado()+"; tamaño: "+particion.getSize());
         }
-        System.out.println("----EVENTOS----");
+        escribirEvento("---------EVENTOS---------");
     }
 
 
+    public void crearProceso(String nombre,int mem_req, int t_arribo, int t_trabajo){
+        Proceso proceso = new Proceso(nombre,mem_req,t_arribo,t_trabajo);
+        this.cant_procesos++;
+        this.procesos.add(proceso);
+    }
+    
     //Obtengo la particion selecionada para cargar el proceso, y la divido en dos
     //La nueva particion se carga posterior a la original
     //Para esto utilizo un buffer, para agregar la nueva particion y luego tabla=buffer
@@ -102,7 +174,6 @@ public class Admin{
         int i=0;
         i=this.tabla.indexOf(particion);
         this.tabla.add(i+1,nueva_particion);
-        System.out.println("Cargar particion");
     }
 
 
@@ -111,7 +182,7 @@ public class Admin{
         
         Particion particion= trabajo.getParticion();
         this.tabla.get(this.tabla.indexOf(particion)).setEstado(false);
-        System.out.println("Se libero la particion: "+particion.getMyId()+"; del trabajo: "+trabajo.getMyId()+"; perteneciente al proceso: "+trabajo.getProceso().getNombre());
+        escribirEvento("Se libero la particion: "+particion.getMyId()+"; del trabajo: "+trabajo.getMyId()+" del proceso: "+trabajo.getProceso().getNombre());
 
         //Se analiza si hay que unificar particiones libres proximas a la liberada
         
@@ -152,7 +223,7 @@ public class Admin{
     public void swapOut(Trabajo trabajo){
 
         this.liberarParticion(trabajo);
-        System.out.println("Se termina el trabajo: "+trabajo.getMyId());
+        escribirEvento("Se termina el trabajo: "+trabajo.getMyId());
         trabajos.remove(trabajo);
 
         for(int i=0;i<t_to_free;i++){
@@ -167,24 +238,35 @@ public class Admin{
     public void swapIn(Proceso proceso, Particion particion){    
             // Se crea la nueva partcion
             Particion nueva_particion=crearParticion(particion,proceso);
+            
             if(nueva_particion!=null){
                 // va a cargar en la tabla la particion
+                escribirEvento("Se creo particion con id "+nueva_particion.getMyId()+" con tamanño: "+nueva_particion.getSize());
                 cargarParticion(nueva_particion,particion);
             }
             //Se crea el trabajo, del proceso arribado cargado en la particion seleccionada
             Trabajo trabajo = new Trabajo(proceso,particion);
             trabajos.add(trabajo);
-            System.out.println("Se creo el trabajo para "+proceso.getNombre()+" y se cargó en la particion "+particion.getMyId());
 
             for(int i=0;i<t_to_load;i++){
                 this.tiempo++;
+                pantalla.escribirEvento("Se esta cargando en memoria un trabajo");
                 this.pasoTiempo();
             }
+            
+            escribirEvento("Se creo el trabajo para "+proceso.getNombre()+" y se cargó en la particion "+particion.getMyId());
     }
 
-    // Funcion principal, se encarga de dar paso al tiempo, verificar si algun proceso arribo o si algun trabajo finalizo su ejecucion
+    // Funcion principal, se encarga de dar paso al tiempo, 
+    // verificar si algun proceso arribo o si algun trabajo finalizo su ejecucion
     public void administrar() {
-        System.out.println("Comienzo de la tanda");
+        escribirEvento("Comienza la tanda");
+        estadoTabla("Comienza la tanda");
+        escribirResultados("Ingresan "+this.cant_procesos+" al administrador");
+        escribirResultados("Estrategia seleccionada: "+this.estrategia.getNombre());
+        escribirResultados("Memoria total disponible: "+this.mem_total);
+        escribirResultados("T.selecccion: "+this.t_to_select+"T.carga: "+this.t_to_load+";T.liberacion: "+this.t_to_free);
+        
         int atendidos=0;
         int terminados=0;
         
@@ -194,7 +276,7 @@ public class Admin{
             // Primero me fijo si no existe un trabajo que haya finalizado su ejeccucion
             if (salidas.peek()!=null){
                 Trabajo trabajo = salidas.remove();
-                System.out.println("El trabajo "+trabajo.getMyId()+" termina su ejecucion");
+                escribirEvento("El trabajo "+trabajo.getMyId()+" termina su ejecucion");
                 terminados++;
                 this.swapOut(trabajo); 
             }
@@ -202,23 +284,25 @@ public class Admin{
             // Luego me fijo si hay algun proceso que haya arribado
             if ((arribos.peek()!=null)){
                 System.out.println("Se atiende al proceso "+arribos.peek().getNombre());
+                escribirEvento("Se atiende al proceso "+arribos.peek().getNombre());
                 
                 /* va a buscar y selecionar una particion disponible
                 Si existe una, crea la nueva particion y se carga antes de la partcion seleccionada
                 En las salidas de texto de los eventos debe reflejarse la 
                 creacion de particiones, el particionamiento que se hace*/
-                Particion particion=(estrategia.selecParticion(arribos.peek(),this.tabla));
+                
                 
                 // Se verifica que exista una particion para seleccionar
                 for(int i=0;i<t_to_select;i++){
                     this.tiempo++;
+                    escribirEvento("Se esta seleccionando una particion");
                     this.pasoTiempo();
                 }
                 
-                
+                Particion particion=(estrategia.selecParticion(arribos.peek(),this.tabla));
                 //Si existe una particion libre se atiende al proceso
                 if(particion!=null){
-                    System.out.println("Se selecciono la particion "+particion.getMyId()+" para "+arribos.peek().getNombre());
+                    escribirEvento("Se selecciono la particion "+particion.getMyId()+" para "+arribos.peek().getNombre());
                     Proceso proc=arribos.remove();
                     atendidos++;
                     this.swapIn(proc,particion);
@@ -228,11 +312,15 @@ public class Admin{
             // Si se atendieron todos los procesos que entraron y todos los trabajos terminaron, se finaliza la tanda
             if((procesos.size()==atendidos)&&(atendidos==terminados)){
                 finTanda=true;
-                System.out.println("Se atendieron a "+atendidos+" procesos y "+terminados+" trabajos finalizaron");
+                escribirEvento("Se atendieron a "+atendidos+" procesos y "+terminados+" trabajos finalizaron");
                 break;
             }
             this.tiempo++;
         }
-        this.pasoTiempo();
+        //this.pasoTiempo();
+        escritorLog.close();
+        escritorTab.close();
+        escritorResult.close();
     }
+    
 }

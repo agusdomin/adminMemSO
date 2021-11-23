@@ -4,6 +4,13 @@ import java.util.ArrayList;
 
 public class WorstFit implements Estrategia{
     Particion particion_selec;
+    private String nombre;
+    
+    public WorstFit(){
+        super();
+        particion_selec=null;
+        this.nombre="Worst-Fit";
+    }
     @Override
     public Particion selecParticion(Proceso proceso, ArrayList<Particion> tabla) {
         this.particion_selec=null;
@@ -25,6 +32,10 @@ public class WorstFit implements Estrategia{
             System.out.println("No hay particiones libres");
         }
         return particion_selec;
+    }
+    
+    public String getNombre(){
+        return this.nombre;
     }
     
 }
