@@ -5,15 +5,13 @@ public class Particion{
     private int myId;
     private int mem_ocupada;
     private boolean ocupada; //hacer una variable tipo Enumerado
-    private int dir_comienzo;
+    
   
     public Particion(int mem_requerida,boolean ocupada){
         this.myId=id;
         id++;
         this.mem_ocupada=mem_requerida;
-        this.ocupada=ocupada;
-        dir_comienzo=1;
-        
+        this.ocupada=ocupada;    
     }    
     
     public void setSize(int size){  this.mem_ocupada=size; }

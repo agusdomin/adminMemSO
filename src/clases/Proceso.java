@@ -6,6 +6,7 @@ public class Proceso {
     private int t_trabajo;
     private int t_arribo;
     private boolean atendido;
+    private int t_retorno;
     
     public Proceso(String n,int m,int t_a, int t_t){
         
@@ -13,6 +14,7 @@ public class Proceso {
         this.mem_requerida=m;
         this.t_trabajo=t_t;
         this.t_arribo=t_a;
+        this.t_retorno=0;
         System.out.println("Proceso creado, nombre: "+this.nombre+", memoria requerida: "+this.mem_requerida);
     }
     
@@ -29,7 +31,15 @@ public class Proceso {
             }
         }
         return false;
-                
+    }
+    public boolean isAtendido(){
+        return this.atendido;
+    }
+    public void setRetorno(int t){
+        this.t_retorno=t;
+    }
+    public int getRetorno(){
+        return this.t_retorno;
     }
     public int getTtrabajo(){
         return this.t_trabajo;

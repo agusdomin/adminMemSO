@@ -15,6 +15,7 @@ public class Admin{
 
     private int tiempo=0;
     private boolean finTanda = false;
+    private int fragmentacionExterna=0;
     
     private int t_to_select;
     private int t_to_free;
@@ -34,12 +35,7 @@ public class Admin{
     private Queue<Trabajo> salidas = new LinkedList<>();
     
     private Pantalla pantalla;
-    private File OutputLogFile;
-    private File OutputTabFile;
-    private File OutputResultFile;
-    private PrintWriter  escritorLog;
-    private PrintWriter  escritorTab;
-    private PrintWriter  escritorResult;
+    private ControldeArchivos archivos;
     
     public Admin(String estrategiaSeleccionada, int mem_total, int t_to_select,int t_to_load, int t_to_free, Pantalla pantalla){
         switch(estrategiaSeleccionada){
@@ -63,57 +59,25 @@ public class Admin{
         this.t_to_free=t_to_free;
         this.mem_total=mem_total;
         this.pantalla=pantalla;
-        
+        this.archivos=new ControldeArchivos();
         Particion.id=0;
 
         tabla.add(new Particion(this.mem_total,false)); //El admin inicia con una tabla con una unica particion, que esta libre y es el total de la memoria
         
-        this.crearArchivos();
     }
     
-    //Manejo de archivos
-    private void crearArchivos(){
-        try {
-            OutputLogFile= new File("Log.txt");
-            OutputTabFile= new File("Tabla.txt");
-            OutputResultFile= new File("Resultados.txt");
-            
-            if (OutputLogFile.createNewFile()) {
-              System.out.println("Archivo creado " + OutputLogFile.getName());
-            } else {
-              System.out.println("El archivo ya existe");
-            }
-            if (OutputTabFile.createNewFile()) {
-              System.out.println("Archivo creado  " + OutputTabFile.getName());
-            } else {
-              System.out.println("El archivo ya existe");
-            }
-            if (OutputResultFile.createNewFile()) {
-              System.out.println("Archivo creado  " + OutputResultFile.getName());
-            } else {
-              System.out.println("El archivo ya existe");
-            }
-            
-            this.escritorLog = new PrintWriter(this.OutputLogFile);
-            this.escritorTab = new PrintWriter(this.OutputTabFile);
-            this.escritorResult = new PrintWriter(this.OutputResultFile);
-            
-        } catch (IOException e) {
-            System.out.println("No se pudieron crear los archivos");
-            e.printStackTrace();
-        }
-    }
+    
     private void escribirEvento(String s){
         pantalla.escribirEvento(s);
-        this.escritorLog.println(s);
+        archivos.escribirEvento(s);
     }
     private void estadoTabla(String s){
         pantalla.estadoTabla(s);
-        escritorTab.println(s);
+        archivos.estadoTabla(s);
     }
     private void escribirResultados(String s){    
         pantalla.escribirResultados(s);
-        escritorResult.println(s);
+        archivos.escribirResultados(s);
     }
     
     
@@ -141,7 +105,12 @@ public class Admin{
         estadoTabla("----ESTADO DE LA TABLA----");
         for(Particion particion: tabla){
             estadoTabla("Particion: "+particion.getMyId()+"; estado: "+particion.getEstado()+"; tamaño: "+particion.getSize());
+            if(!particion.getEstado()){
+                this.fragmentacionExterna+=particion.getSize();
+            }
+            
         }
+        estadoTabla("Indice de frag. externa: "+this.fragmentacionExterna);
         escribirEvento("---------EVENTOS---------");
     }
 
@@ -229,6 +198,7 @@ public class Admin{
         for(int i=0;i<t_to_free;i++){
             this.tiempo++;
             this.pasoTiempo();
+            escribirEvento("Se esta terminando un trabjao");
         }
         //cambiar particion en donde se almacenaba el trabajo
     }
@@ -269,6 +239,7 @@ public class Admin{
         
         int atendidos=0;
         int terminados=0;
+        int t_retorno_tanda=0;
         
         while (!(finTanda)){
             this.pasoTiempo();
@@ -279,6 +250,11 @@ public class Admin{
                 escribirEvento("El trabajo "+trabajo.getMyId()+" termina su ejecucion");
                 terminados++;
                 this.swapOut(trabajo); 
+                escribirEvento("El proceso "+trabajo.getProceso().getNombre()+" finalizó");
+                if(trabajo.getProceso().isAtendido()){
+                    trabajo.getProceso().setRetorno(this.tiempo);
+                }
+                
             }
 
             // Luego me fijo si hay algun proceso que haya arribado
@@ -309,18 +285,30 @@ public class Admin{
                 //Si no existe ninguna particion libre, el proceso espera hasta que algun trabajo finalize
                 }
             }
+            
+            if(atendidos==this.cant_procesos-1){
+                t_retorno_tanda=this.tiempo;
+            }
             // Si se atendieron todos los procesos que entraron y todos los trabajos terminaron, se finaliza la tanda
             if((procesos.size()==atendidos)&&(atendidos==terminados)){
                 finTanda=true;
-                escribirEvento("Se atendieron a "+atendidos+" procesos y "+terminados+" trabajos finalizaron");
+                int retornoTotal=0;
+                escribirResultados("Se atendieron a "+atendidos+" procesos y "+terminados+" trabajos finalizaron");
+                escribirResultados("------Retornos de cada proceso------");
+                for(Proceso proceso: procesos){
+                    escribirResultados(proceso.getNombre()+": "+proceso.getRetorno());
+                    retornoTotal+=proceso.getRetorno();
+                }
+                escribirResultados("Tiempo de retorno medio: "+(retornoTotal/atendidos));
+                escribirResultados("Tiempo de retorno de la tanda: "+t_retorno_tanda);
+                
                 break;
             }
             this.tiempo++;
+            escribirResultados("Tiempo de retorno de la tanda: "+tiempo);
         }
         //this.pasoTiempo();
-        escritorLog.close();
-        escritorTab.close();
-        escritorResult.close();
+        archivos.close();
     }
     
 }
