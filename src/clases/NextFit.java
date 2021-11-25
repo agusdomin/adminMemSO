@@ -22,21 +22,29 @@ public class NextFit implements Estrategia{
         while (!(seleccionado)){
             try{
                 System.out.println("Se analiza el elemento "+peek+" de la tabla");
+                System.out.println("tamanio "+tabla.size()+" indice: "+peek+" fin de cola: "+this.end);
+                if(peek==(tabla.size())){
+                        System.out.println("Se llego al final de la tabla");
+                        peek=0;    
+                }
+                
                 if((tabla.get(peek).getSize()>=proceso.getSize()) && (!(tabla.get(peek).getEstado()))){
+                    System.out.println("Se selecciono la particion "+tabla.get(peek).getMyId()+" con tamaño "+tabla.get(peek).getSize());
                     particon_selec=tabla.get(peek);
                     seleccionado=true;
+                    peek++;
                     this.end=peek;
-                    System.out.println("Se selecciono la particion "+tabla.get(peek).getMyId()+" con tamaño "+tabla.get(peek).getSize());
                 }else{
                     //Si es el final de la lista, vuelvo al principio
-                    if(peek==(tabla.size()-1)){
-                        System.out.println("Se llego al final de la tabla");
-                        peek=0;
-                    //Si la particion no esta libre o no tiene el suficiente espacio, avanzo una particion
-                    }else{
-                        System.out.println("La particion no puede seleccionarse se analiza la siguiente particion");
-                        peek++;
-                    }
+                //    if(this.end==(tabla.size())){
+                  //      System.out.println("Se llego al final de la tabla");
+                    //    peek=0;
+                    
+                    //}else{
+                        //Si la particion no esta libre o no tiene el suficiente espacio, avanzo una particion
+                    System.out.println("La particion"+peek+" no puede seleccionarse se analiza la siguiente particion");
+                    peek++;
+                    //}
 
                     if(peek==this.end){
                         System.out.println("No hay particiones libres");
@@ -45,11 +53,12 @@ public class NextFit implements Estrategia{
                         this.end=peek;
                     }
                 }
-            }catch(IndexOutOfBoundsException e){
-               this.end-=1;
             }
-            
+            catch(IndexOutOfBoundsException e){
+               
+            }
         }
+         
         
         return particon_selec;
     }

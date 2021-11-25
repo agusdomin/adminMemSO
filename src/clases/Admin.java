@@ -3,11 +3,6 @@ import java.util.*;
 import clases.Proceso;
 import clases.Trabajo;
 import clases.Particion;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 
 import swing.Pantalla;
 
@@ -105,12 +100,15 @@ public class Admin{
         estadoTabla("----ESTADO DE LA TABLA----");
         for(Particion particion: tabla){
             estadoTabla("Particion: "+particion.getMyId()+"; estado: "+particion.getEstado()+"; tamaño: "+particion.getSize());
-            if(!particion.getEstado()){
+            if((!particion.getEstado())&&(this.tabla.size()>1)){
                 this.fragmentacionExterna+=particion.getSize();
             }
             
         }
-        estadoTabla("Indice de frag. externa: "+this.fragmentacionExterna);
+        if(this.tabla.size()>1){
+            estadoTabla("Indice de frag. externa: "+this.fragmentacionExterna);
+        }
+        
         escribirEvento("---------EVENTOS---------");
     }
 
@@ -152,6 +150,7 @@ public class Admin{
         Particion particion= trabajo.getParticion();
         this.tabla.get(this.tabla.indexOf(particion)).setEstado(false);
         escribirEvento("Se libero la particion: "+particion.getMyId()+"; del trabajo: "+trabajo.getMyId()+" del proceso: "+trabajo.getProceso().getNombre());
+        System.out.println("Se libero la particion: "+particion.getMyId()+"; del trabajo: "+trabajo.getMyId()+" del proceso: "+trabajo.getProceso().getNombre());
 
         //Se analiza si hay que unificar particiones libres proximas a la liberada
         
@@ -167,6 +166,7 @@ public class Admin{
                     if(p!=null){buffer.add(p);}
                 }
                 this.tabla=buffer;
+                this.tabla.trimToSize();
             }   
         } catch (IndexOutOfBoundsException e) {}
 
@@ -232,7 +232,7 @@ public class Admin{
     public void administrar() {
         escribirEvento("Comienza la tanda");
         estadoTabla("Comienza la tanda");
-        escribirResultados("Ingresan "+this.cant_procesos+" al administrador");
+        escribirResultados("Ingresan "+this.cant_procesos+" procesos al administrador");
         escribirResultados("Estrategia seleccionada: "+this.estrategia.getNombre());
         escribirResultados("Memoria total disponible: "+this.mem_total);
         escribirResultados("T.selecccion: "+this.t_to_select+"T.carga: "+this.t_to_load+";T.liberacion: "+this.t_to_free);
@@ -286,14 +286,12 @@ public class Admin{
                 }
             }
             
-            if(atendidos==this.cant_procesos-1){
-                t_retorno_tanda=this.tiempo;
-            }
             // Si se atendieron todos los procesos que entraron y todos los trabajos terminaron, se finaliza la tanda
             if((procesos.size()==atendidos)&&(atendidos==terminados)){
                 finTanda=true;
+                t_retorno_tanda=this.tiempo;
                 int retornoTotal=0;
-                escribirResultados("Se atendieron a "+atendidos+" procesos y "+terminados+" trabajos finalizaron");
+                escribirResultados(terminados+" trabajos finalizaron");
                 escribirResultados("------Retornos de cada proceso------");
                 for(Proceso proceso: procesos){
                     escribirResultados(proceso.getNombre()+": "+proceso.getRetorno());
@@ -301,13 +299,13 @@ public class Admin{
                 }
                 escribirResultados("Tiempo de retorno medio: "+(retornoTotal/atendidos));
                 escribirResultados("Tiempo de retorno de la tanda: "+t_retorno_tanda);
-                
+                escribirResultados("Indice de frag. externa total: "+this.fragmentacionExterna);
                 break;
             }
             this.tiempo++;
-            escribirResultados("Tiempo de retorno de la tanda: "+tiempo);
+            
         }
-        //this.pasoTiempo();
+        this.pasoTiempo();
         archivos.close();
     }
     

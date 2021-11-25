@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -31,7 +32,7 @@ public class Pantalla extends javax.swing.JFrame {
         //controler= new Controlador();
         setResizable(false);
         this.setLocationRelativeTo(null);
-        
+        this.setTitle("Administrador de memoria dinámica");
     }
 
     /**
@@ -108,6 +109,11 @@ public class Pantalla extends javax.swing.JFrame {
         jLabel4.setText("T. de selección");
 
         Buscar.setText("Buscar");
+        Buscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BuscarActionPerformed(evt);
+            }
+        });
 
         Iniciar.setText("Iniciar");
         Iniciar.addActionListener(new java.awt.event.ActionListener() {
@@ -258,7 +264,7 @@ public class Pantalla extends javax.swing.JFrame {
         jTextArea2.setText(null);
         jTextArea3.setText(null);
         
-        this.InputFile = new File("C:/Users/Agus/Documents/Proyectos/Java/adminMemSO/entrada.txt");
+        //this.InputFile = new File("C:/Users/Agus/Documents/Proyectos/Java/adminMemSO/entrada.txt");
         Scanner sc;
         try {
             sc = new Scanner(this.InputFile);
@@ -303,6 +309,17 @@ public class Pantalla extends javax.swing.JFrame {
             Iniciar.setVisible(true);
         } catch (FileNotFoundException ex) {}
     }//GEN-LAST:event_IniciarActionPerformed
+
+    private void BuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BuscarActionPerformed
+        
+        
+        JFileChooser archivo = new JFileChooser();
+        archivo.setCurrentDirectory(new File("."));
+        archivo.showOpenDialog(null);
+        
+        this.InputFile = new File(archivo.getSelectedFile().getAbsolutePath());
+        
+    }//GEN-LAST:event_BuscarActionPerformed
 
     public void escribirEvento(String texto){
         jTextArea1.append(texto+"\n");
